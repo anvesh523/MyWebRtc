@@ -24,7 +24,8 @@ class SignalingClient(
 
     fun connect() {
         val request = Request.Builder()
-            .url("ws://10.0.2.2:8080/ws/$roomId") // Local server IP
+            .url("ws://10.0.2.2:8080/ws?room=$roomId&type=android") // For emulator
+            //.url("wss://YOUR_LOCAL_IP:8080/ws?room=$roomId&type=android") // For real device
             .build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
@@ -45,19 +46,19 @@ class SignalingClient(
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                Log.d("WebRTC", "Error: ${response?.message}  T: ${t.message} ")
+                Log.d("TAG_APP", "Error: ${response?.message}  T: ${t.message} ")
                 listener.onDisconnected()
             }
         })
     }
 
     private fun handleMessage(message: String) {
-        Log.d("WebRTC", "Received: $message")
+        Log.d("TAG_APP", "Received: $message")
         try {
             val json = JSONObject(message)
             when (json.getString("type")) {
                 "offer" -> {
-                    Log.d("WebRTC", "Processing offer...")
+                    Log.d("TAG_APP", "Processing offer...")
                     val offer = SessionDescription(
                         SessionDescription.Type.OFFER,
                         json.getString("sdp")
@@ -91,7 +92,7 @@ class SignalingClient(
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e("Signaling", "Error handling message", e)
+            Log.e("TAG_APP", "Error handling message", e)
         }
     }
 

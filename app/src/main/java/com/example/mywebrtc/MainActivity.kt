@@ -80,17 +80,17 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
     }
 
     override fun onOfferCreated(offer: SessionDescription) {
-        Log.d("WebRTC", "Offer created: ${offer.description}")
+        Log.d("TAG_APP", "Offer created: ${offer.description}")
         signalingClient.sendOffer(offer)
     }
 
     override fun onAnswerCreated(answer: SessionDescription) {
-        Log.d("WebRTC", "Answer created: ${answer.description}")
+        Log.d("TAG_APP", "Answer created: ${answer.description}")
         signalingClient.sendAnswer(answer)
     }
 
     override fun onIceCandidateCreated(iceCandidate: IceCandidate) {
-        Log.d("WebRTC", "ICE candidate: ${iceCandidate.sdp}")
+        Log.d("TAG_APP", "ICE candidate: ${iceCandidate.sdp}")
         signalingClient.sendIceCandidate(iceCandidate)
     }
 

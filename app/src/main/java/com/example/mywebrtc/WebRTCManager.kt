@@ -71,7 +71,7 @@ class WebRTCManager(
                 rtcListener.onDataReceived(data)
             }
             override fun onStateChange() {
-                Log.d("WebRTC", "State: ${dataChannel?.state()}")
+                Log.d("TAG_APP", "State: ${dataChannel?.state()}")
             }
             override fun onBufferedAmountChange(l: Long) {}
         })
@@ -98,11 +98,11 @@ class WebRTCManager(
     fun createAnswer() {
         peerConnection?.createAnswer(object : SdpObserver {
             override fun onCreateSuccess(sessionDescription: SessionDescription) {
-                Log.d("WebRTC", "Answer created successfully")
+                Log.d("TAG_APP", "Answer created successfully")
                 peerConnection?.setLocalDescription(object : SdpObserver {
                     override fun onCreateSuccess(p0: SessionDescription?) {}
                     override fun onSetSuccess() {
-                        Log.d("WebRTC", "Local description set successfully")
+                        Log.d("TAG_APP", "Local description set successfully")
                         signalingListener.onAnswerCreated(sessionDescription)
                     }
                     override fun onCreateFailure(p0: String?) {}
@@ -119,11 +119,11 @@ class WebRTCManager(
         peerConnection?.setRemoteDescription(object : SdpObserver {
             override fun onCreateSuccess(p0: SessionDescription?) {}
             override fun onSetSuccess() {
-                Log.d("WebRTC", "Successfully set remote description")
+                Log.d("TAG_APP", "Successfully set remote description")
                 // For answers, this is where you'd add tracks if needed
             }
             override fun onSetFailure(error: String) {
-                Log.e("WebRTC", "Failed to set remote description: $error")
+                Log.e("TAG_APP", "Failed to set remote description: $error")
             }
             override fun onCreateFailure(p0: String?) {}
         }, sessionDescription)
