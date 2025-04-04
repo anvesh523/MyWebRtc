@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MyWebRtc</string>
+    <string name="enter_room_id">Enter Room ID</string>
+    <string name="connect">Connect</string>
+    <string name="type_a_message">Type a message</string>
+    <string name="send">Send</string>
+</resources>
