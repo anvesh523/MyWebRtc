@@ -1,6 +1,7 @@
 # MyWebRTC
 
 How to Use This App
+
     Set up the local server:
         Install Node.js
         Run node server.js on your computer
@@ -14,6 +15,7 @@ How to Use This App
         Start chatting!
 
 Key Features
+
     - Uses WebRTC DataChannel for direct P2P communication
     - Works without internet (only local network required)
     - Unique room ID system for pairing devices
