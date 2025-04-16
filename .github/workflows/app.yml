@@ -73,4 +73,3 @@ jobs:
       with:
         name: ${{ env.playstore_name }} debug APK
         path: ${{ env.main_project_module }}/build/outputs/apk/debug/
-        artifacts: app/build/outputs/apk/debug/*.apk
