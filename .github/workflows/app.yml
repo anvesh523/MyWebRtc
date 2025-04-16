@@ -41,22 +41,13 @@ jobs:
       with:
         distribution: 'zulu' # See 'Supported distributions' for available options
         java-version: '11'
+        cache: 'gradle'
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
 
-    # Cache Gradle dependencies and Gradle Wrapper
-    - name: Setup Gradle Cache
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
-
     - name: Make gradlew executable
       run: chmod +x ./gradlew
-
 
     - name: Run Linters and Test
       run: ./gradlew check
