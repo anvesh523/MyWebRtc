@@ -71,5 +71,6 @@ jobs:
     - name: Upload APK Debug - ${{ env.repository_name }}
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.date_today }}_${{ env.repository_name }}_debug
+        name: ${{ env.playstore_name }} debug APK
         path: ${{ env.main_project_module }}/build/outputs/apk/debug/
+        artifacts: app/build/outputs/apk/debug/*.apk
