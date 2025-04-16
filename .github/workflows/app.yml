@@ -30,7 +30,7 @@ jobs:
 
     # Set Current Date As Env Variable
     - name: Set current date as env variable
-      run: echo "date_today=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+      run: echo "date_today=$(date +'%Y-%m-%d-%h-%M')" >> $GITHUB_ENV
 
     # Set Repository Name As Env Variable
     - name: Set repository name as env variable
@@ -43,7 +43,7 @@ jobs:
         java-version: '17'
 
     - name: Setup Gradle
-      uses: gradle/gradle-build-action@v3
+      uses: gradle/gradle-build-action@v4
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
@@ -71,5 +71,5 @@ jobs:
     - name: Upload APK Debug - ${{ env.repository_name }}
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - APK(s) debug generated
+        name: ${{ env.date_today }}_${{ env.repository_name }}_debug
         path: ${{ env.main_project_module }}/build/outputs/apk/debug/
