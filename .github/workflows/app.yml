@@ -6,7 +6,7 @@ env:
   main_project_module: app
 
   # The name of the Play Store
-  playstore_name: My WebRTC APP
+  playstore_name: My WebRTC
 
 # When it will be triggered
 on:
