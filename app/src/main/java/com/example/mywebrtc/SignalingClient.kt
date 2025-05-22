@@ -3,6 +3,10 @@ package com.example.mywebrtc
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okhttp3.*
 import okio.ByteString
 import org.json.JSONObject
@@ -15,21 +19,21 @@ class SignalingClient(
     private val roomId: String,
     private val listener: SignalingListener
 ) {
-    private val client = OkHttpClient.Builder()
-        .readTimeout(3, TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
-        .build()
-
+    private lateinit var client: OkHttpClient
     private var webSocket: WebSocket? = null
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     fun connect() {
-        val request = Request.Builder()
-            .url("ws://10.0.2.2:8080/ws?room=$roomId&type=android") // For emulator
-            //.url("wss://YOUR_LOCAL_IP:8080/ws?room=$roomId&type=android") // For real device
+        client = OkHttpClient.Builder()
+            .pingInterval(60, TimeUnit.SECONDS)
+            .readTimeout(3, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
             .build()
 
+        val request = Request.Builder().url("ws://10.0.2.2:8080/ws?room=$roomId&type=android").build()
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
+                Log.d("TAG_APP", "WebSocket connected successfully")
                 listener.onConnected()
             }
 
@@ -42,14 +46,22 @@ class SignalingClient(
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                Log.d("TAG_APP", "WebSocket closed. The reason: $reason")
                 listener.onDisconnected()
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                Log.d("TAG_APP", "Error: ${response?.message}  T: ${t.message} ")
-                listener.onDisconnected()
+                Log.d("TAG_APP", "Error: ${response?.message}  message: ${t.message} ")
+                reconnect()
             }
         })
+    }
+
+    private fun reconnect() {
+        coroutineScope.launch {
+            delay(2000)
+            connect()
+        }
     }
 
     private fun handleMessage(message: String) {
@@ -63,16 +75,7 @@ class SignalingClient(
                         SessionDescription.Type.OFFER,
                         json.getString("sdp")
                     )
-                    // 1. Set remote description first
                     webRTCManager.setRemoteDescription(offer)
-
-                    // 2. Create data channel if not initiator
-                    webRTCManager.createDataChannel()
-
-                    // 3. Create answer after 500ms delay (helps with timing issues)
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        webRTCManager.createAnswer()
-                    }, 500)
                 }
                 "answer" -> {
                     val answer = SessionDescription(
@@ -84,10 +87,13 @@ class SignalingClient(
                 "candidate" -> {
                     val iceCandidate = IceCandidate(
                         json.getString("id"),
-                        json.getInt("label"),
+                        json.getInt("index"),
                         json.getString("candidate")
                     )
                     webRTCManager.addIceCandidate(iceCandidate)
+                }
+                "error" -> {
+                    Log.d("TAG_APP", "Something went wrong")
                 }
             }
         } catch (e: Exception) {
@@ -124,6 +130,8 @@ class SignalingClient(
 
     fun disconnect() {
         webSocket?.close(1000, "User disconnected")
+        client.dispatcher.executorService.shutdown()
+        client.cache?.close()
     }
 
     interface SignalingListener {

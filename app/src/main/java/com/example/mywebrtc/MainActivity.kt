@@ -1,5 +1,7 @@
 package com.example.mywebrtc
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -9,11 +11,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.webrtc.IceCandidate
 import org.webrtc.SessionDescription
 
 class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
-    WebRTCManager.RTCListener, SignalingClient.SignalingListener {
+    SignalingClient.SignalingListener {
 
     private lateinit var webRTCManager: WebRTCManager
     private lateinit var signalingClient: SignalingClient
@@ -22,8 +28,6 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
     private lateinit var chatTextView: TextView
     private lateinit var connectButton: Button
     private lateinit var sendButton: Button
-
-    private var isInitiator = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,14 +45,11 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
         connectButton = findViewById(R.id.connectButton)
         sendButton = findViewById(R.id.sendButton)
 
-        webRTCManager = WebRTCManager(this, this, this)
-
         connectButton.setOnClickListener {
             val roomId = roomIdEditText.text.toString()
             if (roomId.isNotEmpty()) {
                 signalingClient = SignalingClient(webRTCManager, roomId, this)
                 signalingClient.connect()
-                isInitiator = true
             }
         }
 
@@ -60,23 +61,32 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
                 messageEditText.text.clear()
             }
         }
+        webRTCManager = WebRTCManager(this, this)
+
+        // WebRtcLogger.info("Message")
+
     }
 
-    override fun onConnected() {
-        runOnUiThread {
-            appendToChat("Connected to signaling server")
-            webRTCManager.initializePeerConnection()
-            if (isInitiator) {
-                webRTCManager.createDataChannel()
-                webRTCManager.createOffer()
+    private suspend fun isNetworkAvailable(): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE)
+                        as ConnectivityManager
+                connectivityManager.activeNetworkInfo?.isConnected == true
+            } catch (e: Exception) {
+                false
             }
         }
     }
 
+    override fun onConnected() {
+        webRTCManager.initializePeerConnection()
+        webRTCManager.createDataChannel()
+        webRTCManager.createOffer()
+    }
+
     override fun onDisconnected() {
-        runOnUiThread {
-            appendToChat("Disconnected from signaling server")
-        }
+        WebRtcLogger.info("Disconnected")
     }
 
     override fun onOfferCreated(offer: SessionDescription) {
@@ -94,8 +104,16 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
         signalingClient.sendIceCandidate(iceCandidate)
     }
 
+    override fun onDataChannelOpen() {
+        signalingClient.disconnect()
+    }
+
+    override fun onDataChannelClose() {
+        webRTCManager.close()
+    }
+
     override fun onDataReceived(data: String) {
-        runOnUiThread {
+        MainScope().launch {
             appendToChat("Peer: $data")
         }
     }
@@ -105,8 +123,8 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
     }
 
     override fun onDestroy() {
-        webRTCManager.close()
         signalingClient.disconnect()
+        webRTCManager.close()
         super.onDestroy()
     }
 }
