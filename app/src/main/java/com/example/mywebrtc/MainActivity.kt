@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -46,11 +47,9 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
         sendButton = findViewById(R.id.sendButton)
 
         connectButton.setOnClickListener {
-            val roomId = roomIdEditText.text.toString()
-            if (roomId.isNotEmpty()) {
-                signalingClient = SignalingClient(webRTCManager, roomId, this)
-                signalingClient.connect()
-            }
+             do CoroutineScope(Dispatchers.IO).launch {
+                 SignalingClient(webRTCManager, roomIdEditText.text.toString(), this@MainActivity).connect()
+             } while (roomIdEditText.text.toString().isNotEmpty())
         }
 
         sendButton.setOnClickListener {
@@ -63,20 +62,6 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
         }
         webRTCManager = WebRTCManager(this, this)
 
-        // WebRtcLogger.info("Message")
-
-    }
-
-    private suspend fun isNetworkAvailable(): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE)
-                        as ConnectivityManager
-                connectivityManager.activeNetworkInfo?.isConnected == true
-            } catch (e: Exception) {
-                false
-            }
-        }
     }
 
     override fun onConnected() {

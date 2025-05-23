@@ -23,7 +23,7 @@ class SignalingClient(
     private var webSocket: WebSocket? = null
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-    fun connect() {
+   suspend fun connect() {
         client = OkHttpClient.Builder()
             .pingInterval(60, TimeUnit.SECONDS)
             .readTimeout(3, TimeUnit.SECONDS)
@@ -130,8 +130,11 @@ class SignalingClient(
 
     fun disconnect() {
         webSocket?.close(1000, "User disconnected")
-        client.dispatcher.executorService.shutdown()
-        client.cache?.close()
+        client.apply {
+            dispatcher.executorService.shutdown()
+            connectionPool.evictAll()
+            cache?.close()
+        }
     }
 
     interface SignalingListener {
