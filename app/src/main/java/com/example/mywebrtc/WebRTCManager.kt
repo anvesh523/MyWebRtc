@@ -2,11 +2,24 @@ package com.example.mywebrtc
 
 import android.content.Context
 import android.util.Log
-import org.webrtc.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.future.future
+import org.webrtc.DataChannel
+import org.webrtc.IceCandidate
+import org.webrtc.MediaConstraints
+import org.webrtc.MediaStream
+import org.webrtc.PeerConnection
+import org.webrtc.PeerConnectionFactory
+import org.webrtc.RtpReceiver
+import org.webrtc.SdpObserver
+import org.webrtc.SessionDescription
 import java.nio.ByteBuffer
 
 class WebRTCManager(
-    context: Context,
+    private val webNetworkCall: WebNetworkCall,
+    private val context: Context,
     private val signalingListener: SignalingListener,
 ) {
     private val iceServers = listOf(
@@ -42,7 +55,11 @@ class WebRTCManager(
             }
 
             override fun onSignalingChange(signalingState: PeerConnection.SignalingState?) {
-                Log.d("TAG_APP", "onSignalingChange: $signalingState")
+                CoroutineScope(Dispatchers.IO).future {
+                    webNetworkCall.fireLogDataNetworkCall(LogEntry()).collectLatest {
+                        //TODO
+                    } //Log.d("TAG_APP", "onSignalingChange: $signalingState")
+                }
             }
             override fun onIceConnectionChange(iceConnectionState: PeerConnection.IceConnectionState?) {
                 Log.d("TAG_APP", "onSignalingChange: $iceConnectionState")

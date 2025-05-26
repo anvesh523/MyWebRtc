@@ -1,13 +1,15 @@
 package com.example.mywebrtc
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import okhttp3.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import okio.ByteString
 import org.json.JSONObject
 import org.webrtc.IceCandidate
@@ -63,6 +65,7 @@ class SignalingClient(
             connect()
         }
     }
+
 
     private fun handleMessage(message: String) {
         Log.d("TAG_APP", "Received: $message")
