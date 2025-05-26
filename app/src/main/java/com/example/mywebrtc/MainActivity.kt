@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
                 messageEditText.text.clear()
             }
         }
-        webRTCManager = WebRTCManager(this, this)
+      //  webRTCManager = WebRTCManager(this, this)
 
     }
 
@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity(), WebRTCManager.SignalingListener,
     }
 
     override fun onDisconnected() {
-        WebRtcLogger.info("Disconnected")
+       // WebRtcLogger.info("Disconnected")
     }
 
     override fun onOfferCreated(offer: SessionDescription) {
