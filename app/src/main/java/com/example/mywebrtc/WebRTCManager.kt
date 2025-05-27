@@ -56,9 +56,10 @@ class WebRTCManager(
 
             override fun onSignalingChange(signalingState: PeerConnection.SignalingState?) {
                 CoroutineScope(Dispatchers.IO).future {
-                    webNetworkCall.fireLogDataNetworkCall(LogEntry()).collectLatest {
-                        //TODO
-                    } //Log.d("TAG_APP", "onSignalingChange: $signalingState")
+                    webNetworkCall.fireLogDataNetworkCall(LogEntry()).collectLatest { result ->
+                        Log.d(WebRTCManager::class.java.simpleName, result.toString())
+                    }
+                // Log.d("TAG_APP", "onSignalingChange: $signalingState")
                 }
             }
             override fun onIceConnectionChange(iceConnectionState: PeerConnection.IceConnectionState?) {
